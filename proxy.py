@@ -1,13 +1,26 @@
 import http.server
 import requests
 
+from pprint import pprint
+def debug(v):
+    pprint(v)
+
+
 class ProxyHandler(http.server.BaseHTTPRequestHandler):
-    server_version = "CIA can #42"
+    server_version = ""
     sys_version = ""
 
 
-    def proxy_request(self, method):
-        response = requests.request(method, self.path)
+    def proxy_request(self):
+        # Form the request
+        request_data = self.read_request_data()
+        self.sanitise_headers()
+        response = requests.request(self.command, 
+                self.path, 
+                data=request_data,
+                headers=self.headers)
+
+        # Pass the response to the client
         self.passthru_status_line(response)
         self.passthru_headers(response)
         self.end_headers()
@@ -15,12 +28,15 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
 
 
     def do_HEAD(self):
-        print('HEAD')
-        self.proxy_request('head')
+        self.proxy_request()
 
 
     def do_GET(self):
-       self.proxy_request('get') 
+        self.proxy_request() 
+
+
+    def do_POST(self):
+        self.proxy_request()
 
 
     def passthru_status_line(self, response):
@@ -38,6 +54,18 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
                 self.send_header('Content-Length', len(response.content))
             else:
                 self.send_header(key, value)
+
+    
+    def read_request_data(self):
+        if 'Content-Length' in self.headers:
+            content_length = int(self.headers['Content-Length'])
+            if content_length > 0:
+                return self.rfile.read(content_length)
+        return None
+
+    
+    def sanitise_headers(self):
+        del(self.headers['Proxy-Connection'])
 
 
 def run(port=8000):
