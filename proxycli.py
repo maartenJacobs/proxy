@@ -7,7 +7,7 @@ import click
 # proxy restart [-p|--port]
 # proxy stop
 # proxy status
-# 
+#
 
 
 def start(port):
@@ -26,7 +26,7 @@ def restart(port):
 @click.command()
 @click.argument('action')
 @click.option('--port', default=8000,
-        help='Port on which the proxy server will run. Default 8000.')
+              help='Port on which the proxy server will run. Default 8000.')
 def cli(action, port):
     if action == 'start':
         start(port)
@@ -34,4 +34,3 @@ def cli(action, port):
         stop()
     else:
         click.echo('unknown action %s' % action)
-

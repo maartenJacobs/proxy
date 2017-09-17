@@ -2,6 +2,8 @@ import http.server
 import requests
 
 from pprint import pprint
+
+
 def debug(v):
     pprint(v)
 
@@ -10,15 +12,14 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
     server_version = ""
     sys_version = ""
 
-
     def proxy_request(self):
         # Form the request
         request_data = self.read_request_data()
         self.sanitise_headers()
-        response = requests.request(self.command, 
-                self.path, 
-                data=request_data,
-                headers=self.headers)
+        response = requests.request(self.command,
+                                    self.path,
+                                    data=request_data,
+                                    headers=self.headers)
 
         # Pass the response to the client
         self.passthru_status_line(response)
@@ -26,24 +27,19 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(response.content)
 
-
     def do_HEAD(self):
         self.proxy_request()
 
-
     def do_GET(self):
-        self.proxy_request() 
-
+        self.proxy_request()
 
     def do_POST(self):
         self.proxy_request()
-
 
     def passthru_status_line(self, response):
         status_code = str(response.status_code).encode('ascii')
         reason = response.reason.encode('ascii')
         self.wfile.write(b'HTTP/1.1 %s %s\r\n' % (status_code, reason))
-
 
     def passthru_headers(self, response):
         for key, value in response.headers.items():
@@ -55,7 +51,6 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
             else:
                 self.send_header(key, value)
 
-    
     def read_request_data(self):
         if 'Content-Length' in self.headers:
             content_length = int(self.headers['Content-Length'])
@@ -63,7 +58,6 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
                 return self.rfile.read(content_length)
         return None
 
-    
     def sanitise_headers(self):
         del(self.headers['Proxy-Connection'])
 
@@ -72,5 +66,3 @@ def run(port=8000):
     server_address = ("", 8000)
     httpd = http.server.HTTPServer(server_address, ProxyHandler)
     httpd.serve_forever()
-
-
