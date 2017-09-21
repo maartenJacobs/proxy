@@ -10,8 +10,16 @@ import click
 #
 
 
-def start(port):
-    proxy.run(port)
+def start(context, port):
+    click.echo('Starting on port %d' % (port))
+    try:
+        proxy.run(port)
+    except OSError as err:
+        if err.errno == 98:
+            print('Address or port are already in use')
+            context.exit(1)
+        else:
+            raise
 
 
 def stop():
@@ -27,9 +35,10 @@ def restart(port):
 @click.argument('action')
 @click.option('--port', default=8000,
               help='Port on which the proxy server will run. Default 8000.')
-def cli(action, port):
+@click.pass_context
+def cli(context, action, port):
     if action == 'start':
-        start(port)
+        start(context, port)
     elif action == 'stop':
         stop()
     else:

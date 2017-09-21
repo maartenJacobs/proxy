@@ -63,6 +63,6 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
 
 
 def run(port=8000):
-    server_address = ("", 8000)
+    server_address = ("", port)
     httpd = http.server.HTTPServer(server_address, ProxyHandler)
     httpd.serve_forever()
