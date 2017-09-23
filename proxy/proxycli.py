@@ -10,8 +10,8 @@ import click
 #
 
 
-def start(context, port):
-    click.echo('Starting on port %d' % (port))
+def start(context, port: int):
+    click.echo('Starting on port %d' % port)
     try:
         proxy.run(port)
     except OSError as err:
